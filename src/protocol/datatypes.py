@@ -27,19 +27,19 @@ class Resource(Enum):
 #seat: int
 
 class ErrorCode(Enum):
-    COMMITMENT_MISMATCH: 1
-    RING_MISMATCH: 2
-    AGE_MISMATCH: 3
-    SCORE_MISMATCH: 4
-    MALFORMED_MESSAGE: 5
-    OUT_OF_PHASE: 6
-    TIMEOUT: 7
+    COMMITMENT_MISMATCH= 1
+    RING_MISMATCH= 2
+    AGE_MISMATCH= 3
+    SCORE_MISMATCH= 4
+    MALFORMED_MESSAGE= 5
+    OUT_OF_PHASE= 6
+    TIMEOUT= 7
 
 class DisconnectReason(Enum):
-    USER_QUIT: 1
-    QUORUM_LOST: 2
-    PROTOCOL_VIOLATION: 3
-    TIMEOUT: 4
+    USER_QUIT= 1
+    QUORUM_LOST= 2
+    PROTOCOL_VIOLATION= 3
+    TIMEOUT= 4
 
 #incident_id: int 64bit value
 #lobby_id: int 128bit value

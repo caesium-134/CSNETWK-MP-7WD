@@ -1,0 +1,7 @@
+import socket
+
+BROADCAST_ADDRESS = "255.255.255.255"
+
+HOST_ADDRESS = socket.gethostname()
+LOBBY_PORT = 7777
+BUFFER_SIZE = 1200 #(Sec 5)

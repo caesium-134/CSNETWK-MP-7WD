@@ -7,6 +7,7 @@
 from dataclasses import dataclass
 
 import json
+import random
 import protocol.datatypes as datatypes
 from typing import List 
 
@@ -14,14 +15,18 @@ from typing import List
 #    Payloads     #
 ###################
 
-# Serializer Func
-def convert_to_json(self) -> str:
-  return json.dumps(self.__dict__)
+# Wrapper function of json to convert into sendable json obj
+def convert_to_json(payload) -> any:
+  return json.dumps(payload)
 
-# Deserializer Func
-def convert_from_json(payload: str) -> 'Payload':
-  return (json.loads(Payload))
-  
+# Wrapper function of json to convert into receivable json obj
+def convert_from_json(payload: str) -> any:
+  return (json.loads(payload))
+
+#Lobby-Peer ID gen 2^7
+def gen_lobby_peer() -> int :
+  return random.randint(1, 128)
+
 # Base payload record
 @dataclass
 class Payload:
