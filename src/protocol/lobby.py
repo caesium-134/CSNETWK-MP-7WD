@@ -24,6 +24,8 @@ class Lobby():
         self.session_id = gen_session_id(input())
         self.roster.append(self.hostname)
 
+        print("Starting Lobby (3~7 Required)")
+
         searching = threading.Event()
         searching.set()
         broadcast_thread = threading.Thread(target=self.broadcast_lobby, args=(searching,))
@@ -35,13 +37,9 @@ class Lobby():
         for t in self.threads:
             t.start()
 
-        print("Starting Lobby (3~7 Required)")
-        searching.clear()
+        time.sleep(T_LOBBY_TIMEOUT)
 
-        if len(self.roster) >= 3 and len(self.roster) <= 8:
-            print("Start Lobby")
-        else:
-            print("Not enough members. baiya")
+        searching.clear()
 
         for t in self.threads:
             t.join()
@@ -57,7 +55,7 @@ class Lobby():
 
         while searching.is_set():
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                sock.settimeout(T_LOBBY_TIMEOUT)  # ADD THIS LINE
+                sock.settimeout(.5)  # ADD THIS LINE
                 try:
 
                     sock.connect(("localhost", LOBBY_PORT))
@@ -95,7 +93,7 @@ class Lobby():
 
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.settimeout(T_LOBBY_TIMEOUT)  # ADD THIS LINE
+            sock.settimeout(.5)  # ADD THIS LINE
             sock.bind(("", 7777))
 
             while searching.is_set() and prev_roster_len <= 8:

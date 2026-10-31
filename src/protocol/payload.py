@@ -77,7 +77,6 @@ class HelloACK(Payload):
 #      Init       #
 ###################
 
-
 @dataclass
 class SeedCommit(Payload):
   commitment: str
