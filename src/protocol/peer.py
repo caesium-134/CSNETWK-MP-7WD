@@ -1,6 +1,7 @@
 import socket
 import time
 import threading
+import verbose 
 
 from sys import exit
 
@@ -9,8 +10,8 @@ from protocol.packet import *
 from protocol.payload import *
 from protocol.timings import *
 from protocol.lobby import *
-from protocol.configs import *
-from protocol.verbose import * 
+from protocol.configs import * 
+ 
 
 #to-do:
 # implement udpee / mesh
