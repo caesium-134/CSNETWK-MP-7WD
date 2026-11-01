@@ -1,4 +1,3 @@
-
 import socket
 import time
 import threading
@@ -36,7 +35,7 @@ class Peer_Host():
 
     def send_message(self, address, message):
         self.sock.sendto(message.encode(), address)
-        verbose.log_sent(self.name, address, message) # prints log if verbose mode is on 
+        verbose.log_sent(self.name, address, message) # prints log if verbose mode is on  
 
     def handle_incoming(self): 
         data, addr = self.sock.recvfrom(4096)
