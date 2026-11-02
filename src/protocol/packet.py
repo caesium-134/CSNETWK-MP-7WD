@@ -3,21 +3,22 @@
 # udp packet record (sec. 5)
 
 import hashlib # for sha-256
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from protocol.payload import *
 
 # to do think how to split ze hand_pass (handle multiple packets)
 
 def gen_session_id(code: str) -> bytes:
+    '''Takes a code string and convert into hashed SHA256(room_code)[0:16] 128 bit.'''
     h = hashlib.new("SHA256")
     h.update(code.encode())
     return h.digest()[:16]
 
 def compare_session_id(user_code:str, received_code:str) -> bool:
+    '''Takes both input and receiving hashed codes and return true if same, false if diff'''
     h = hashlib.new("SHA256")
     h.update(user_code.encode())
     return h[:16] == received_code
-
 
 @dataclass
 class Packet():
@@ -37,16 +38,17 @@ class Packet():
     #L4-L6
     seq_num: int # starts 1, monotonically inc
     ack_num: int # ack bytee
-    payload: dict # convert to dict BEFORE INSERT
+    payload: Payload 
 
 def serialize_packet(packet: Packet) -> bytes:
-    payload_bytes = convert_to_json(packet.payload).encode("utf-8")
+    '''Serializes packet object into bytes for sending'''
+    payload_bytes = convert_to_json(asdict(packet.payload)).encode("utf-8")
     packet.payload_length = len(payload_bytes)
 
-    header =  bytes([0b00000001])
+    header =  packet.ver.to_bytes(1, 'big')
     header += packet.type.to_bytes(1, 'big')
     header += packet.flags.to_bytes(1, 'big')
-    header += bytes([0b00000000])
+    header += packet.reserved.to_bytes(1, 'big')
 
     header += packet.session_id
 
@@ -60,6 +62,7 @@ def serialize_packet(packet: Packet) -> bytes:
 
 # serialize/deserialize a packet
 def deserialize_packet(recv_message: bytes) -> Packet:
+    '''Deserializes bytes received to reconstruct a packet object'''
 
     ver = recv_message[0]
     msg_type = recv_message[1]

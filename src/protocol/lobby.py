@@ -1,5 +1,4 @@
 
-from dataclasses import asdict
 import socket
 import time
 import threading
@@ -13,21 +12,24 @@ from protocol.lobby import *
 from protocol.configs import *
 
 class Lobby():
-    def __init__(self, name):
+    def __init__(self, name, peer_host):
         self.threads = []
         self.roster = []
         self.hostname = name
         self.session_id = None
 
+        self.peer_host = peer_host
+
+    # Lobby loop
     def start(self):
         print("Enter room code:")
         self.session_id = gen_session_id(input())
         self.roster.append(self.hostname)
-
         print("Starting Lobby (3~7 Required)")
 
         searching = threading.Event()
         searching.set()
+
         broadcast_thread = threading.Thread(target=self.broadcast_lobby, args=(searching,))
         listen_thread = threading.Thread(target=self.listen_for_messages, args=(searching, self.roster))
 
@@ -38,7 +40,6 @@ class Lobby():
             t.start()
 
         time.sleep(T_LOBBY_TIMEOUT)
-
         searching.clear()
 
         for t in self.threads:
@@ -50,63 +51,54 @@ class Lobby():
         #   game socket saved somewhere else?
         #   forming session
     
+    # Broadcast to everyone in lobby
     def broadcast_lobby(self, searching):
         lobby_peer_id = gen_lobby_peer()
 
         while searching.is_set():
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                sock.settimeout(.5)  # ADD THIS LINE
-                try:
+            try:
+                p = LobbyPresence(
+                    lobby_peer_id = lobby_peer_id, 
+                    display_name = self.hostname, 
+                    host = HOST_ADDRESS, 
+                    port = self.peer_host.lobby_socket.getsockname()[1] #game_socket a.k.a. no idea how to implement as of yet
+                )
 
-                    sock.connect(("localhost", LOBBY_PORT))
-                    p = LobbyPresence(
-                        lobby_peer_id = lobby_peer_id, 
-                        display_name = self.hostname, 
-                        host = HOST_ADDRESS, 
-                        port = sock.getsockname() #game_socket a.k.a. no idea how to implement as of yet
-                        )
-
-                    packet = Packet(
+                packet = Packet(
                     ver = 1,
                     type = PayloadType.LOBBY_PRESENCE.value,
                     flags=0,
                     reserved = 0,
                     session_id = self.session_id,
                     sender_peer_id= 0xFFFF,
-                    payload_length=len(p.__str__()),
+                    payload_length=0,
                     seq_num=0,
                     ack_num=0,
-                    payload=asdict(p)
-                    )
+                    payload=p
+                )
 
-                    sock.sendto(serialize_packet(packet), ("localhost", 7777))
-                    #print(packet)
-                    time.sleep(T_LOBBY_ANNOUNCE_INTERVAL)
-                except socket.timeout:
-                    continue
+                self.peer_host.send_message(("<broadcast>", LOBBY_PORT), packet, self.peer_host.lobby_socket)
+                time.sleep(T_LOBBY_ANNOUNCE_INTERVAL)
 
+            except socket.timeout:
+                continue
+
+    # Listens for incoming messages in lobby phase
     def listen_for_messages(self, searching, roster):
         prev_roster_len = len(roster)
         print(f"{roster} | {prev_roster_len}/8")
 
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        while searching.is_set() and prev_roster_len <= 8:
+            try:
+                data, addr = self.peer_host.receive_message(self.peer_host.lobby_socket)
 
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.settimeout(.5)  # ADD THIS LINE
-            sock.bind(("", 7777))
-
-            while searching.is_set() and prev_roster_len <= 8:
-                try:
-                    data, addr = sock.recvfrom(1024)
-                except socket.timeout:
-                    continue
-
-                data = deserialize_packet(data)
-
-                if data.type == PayloadType.LOBBY_PRESENCE.value and data.session_id == self.session_id:
-                    display_name = data.payload["display_name"]
-                    if display_name not in roster:
-                        roster.append(display_name)
-                        prev_roster_len = len(roster)
-                        print(f"{roster} | {prev_roster_len}/8")
+                if data != None and addr != None:
+                    if data.type == PayloadType.LOBBY_PRESENCE.value and data.session_id == self.session_id:
+                        display_name = data.payload["display_name"]
+                        if display_name not in roster:
+                            roster.append(display_name)
+                            prev_roster_len = len(roster)
+                            print(f"{roster} | {prev_roster_len}/8")
+            
+            except socket.timeout:
+                continue
