@@ -4,8 +4,11 @@
 
 import argparse
 
-from protocol.peer import Peer_Host
-from protocol.verbose import set_verbose 
+from net.peer_host import Peer_Host
+from protocol.verbose import set_verbose
+from protocol.packet import gen_session_id
+from net.lobby.lobby import Lobby
+#from game import Game
 
 # Initialize main for verbose mode
 if __name__ == "__main__":
@@ -22,6 +25,16 @@ if __name__ == "__main__":
     print("Enter host name.")
     name = input()
     peer_host = Peer_Host(name)
-    peer_host.start()
+    valid = True
 
+    while valid:
+        print("Enter room code.")
+        session_id = input()
 
+        roster = Lobby(name, peer_host).start(session_id)
+
+        #if roster:
+            #Game(roster, peer_host, session_id).run()
+        #else:
+            #valid = False
+            #print("Invalid lobby to start")

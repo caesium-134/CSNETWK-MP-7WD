@@ -4,7 +4,7 @@
 
 import hashlib # for sha-256
 from dataclasses import dataclass, asdict
-from protocol.payload import *
+from protocol.payload.payload import *
 
 # to do think how to split ze hand_pass (handle multiple packets)
 
@@ -23,7 +23,7 @@ def compare_session_id(user_code:str, received_code:str) -> bool:
 @dataclass
 class Packet():
     #L1
-    ver: int # 1
+    ver:  int # 1
     type: int # 0x01 - 0x19 (from payload)
     flags: int # bit 0 = ACK, bit 1 = RT, bit 2-7 RESERVED = 00000
     reserved: int # 0

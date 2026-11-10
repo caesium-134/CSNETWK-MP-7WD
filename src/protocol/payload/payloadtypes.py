@@ -1,0 +1,30 @@
+# magoo
+#0x01 ~ 0x19 (p.s. convert to bits/1 byte)
+from enum import Enum
+
+class PayloadType(Enum):
+    LOBBY_PRESENCE = 1
+    LOBBY_LEAVE= 2
+    LOBBY_START_VOTE= 3
+    LOBBY_START_ACK= 4
+    HELLO= 5
+    HELLO_ACK= 6
+    SEED_COMMIT= 7
+    SEED_REVEAL= 8
+    RING_CONFIRM= 9
+    CARD_COMMIT= 10
+    CARD_REVEAL= 11
+    ACTION_ANNOUNCE= 12
+    HAND_PASS= 13
+    RESOURCE_QUERY= 14
+    RESOURCE_OFFER= 15
+    RESOURCE_BUY= 16
+    AGE_END= 17
+    SCORE_REPORT= 18
+    GAME_END= 19    
+    ERROR= 20
+    PING= 21
+    PONG= 22
+    DISCONNECT= 23
+    DIRECT_MESSAGE= 24
+    GROUP_MESSAGE= 25

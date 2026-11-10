@@ -5,11 +5,9 @@ from protocol import verbose
 
 from sys import exit
 
-from protocol.datatypes import *
 from protocol.packet import *
 from protocol.payload import *
 from protocol.timings import *
-from protocol.lobby import *
 from protocol.configs import * 
 
 
@@ -29,27 +27,39 @@ from protocol.configs import *
 class Peer_Host():
     def __init__(self, name):
         self.name = name
-        self.lobby = Lobby(name, self)
+        self.channels = {}  
+        self.lobby_socket = self.open_lobby()
+        self.game_socket = self.open_game()
 
+        self.peers = []
+
+    def open_lobby(self):
+        self.lobby_socket = self.init_socket(LOBBY_PORT)
+        return self.lobby_socket
+
+    def close_lobby(self):
+        if self.lobby_socket:
+            self.lobby_socket.close()
+
+        # Reset to null
         self.lobby_socket = None
+
+    def open_game(self):
+        self.game_socket = self.init_socket(GAME_PORT)
+        return self.game_socket
+
+    def close_game(self):
+        if self.game_socket:
+            self.game_socket.close()
+
+        # Reset to null
         self.game_socket = None
-
-    def start(self):
-        try:
-            self.lobby_socket = self.init_socket(LOBBY_PORT)
-            self.lobby.start()
-        except OSError:
-            print("Error err")
-        finally:
-            if self.lobby_socket:
-                self.lobby_socket.close()
         
-
     def send_message(self, address, message, socket):
         '''Sends a message to other peers on a socket'''
         try:
             socket.sendto(serialize_packet(message), address)
-            verbose.log_sent(self.name, address, message) # prints log if verbose mode is on  
+            verbose.log_sent(self.name, address, message) # prints log if verbose mode is on
         except OSError:
             print("Error sending message")
 
@@ -64,6 +74,8 @@ class Peer_Host():
                 return message, addr
             else:
                 return None, None
+        except socket.timeout:
+            return None, None
         except OSError:
             print("Error receiving message")
             return None, None
@@ -78,3 +90,6 @@ class Peer_Host():
             return sock
         except OSError:
             print("Can't init socket")
+
+    def host_to_peer(self):
+        return (self.name, self.game_socket.getsockname()[0], self.game_socket.getsockname()[1])

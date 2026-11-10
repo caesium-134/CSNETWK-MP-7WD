@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 import json
 import random
-import protocol.datatypes as datatypes
+import protocol.payload.payloadtypes as datatypes
 from typing import List 
 
 ###################
