@@ -65,19 +65,19 @@ class Peer_Host():
 
 
     def receive_message(self, socket): 
-        '''Receives a message on a socket from another peer'''
-        try:
-            message, addr = socket.recvfrom(4096)
-            if message != None and addr != None:
-                message = deserialize_packet(message)
-                verbose.log_received(self.name, addr, message) 
-                return message, addr
-            else:
-                return None, None
-        except socket.timeout:
+        '''Receives a message on a socket from another peer'''        
+        if socket is None:
             return None, None
-        except OSError:
-            print("Error receiving message")
+        try:
+            message_bytes, addr = socket.recvfrom(4096)
+            # deserialize_packet is called here, so the loop receives a Packet object
+            message = deserialize_packet(message_bytes)
+            verbose.log_received(self.name, addr, message) 
+            return message, addr
+        except socket.timeout:
+            return None, None # Normal behavior, allow the loop to check its stop-flag
+        except (OSError, ValueError) as e:
+            print(f"Error receiving/deserializing message: {e}")
             return None, None
 
     def init_socket(self, port):

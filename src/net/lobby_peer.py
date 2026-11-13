@@ -12,7 +12,8 @@ class LobbyPeer:
         self.display_name = tuple[0]
         self.addr = tuple[1]
         self.port = tuple[2]
-        
+
+        # T_LOBBY_STALE_CNTR
         self.lifetime = time.monotonic()
         self.is_host = False
 

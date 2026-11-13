@@ -16,9 +16,16 @@ def gen_session_id(code: str) -> bytes:
 
 def compare_session_id(user_code:str, received_code:str) -> bool:
     '''Takes both input and receiving hashed codes and return true if same, false if diff'''
+    return gen_session_id(user_code) == received_code
+
+def gen_participant_hash(lobby_peer_ids : list):
+    string = " ".join(map(str, lobby_peer_ids))
     h = hashlib.new("SHA256")
-    h.update(user_code.encode())
-    return h[:16] == received_code
+    h.update(string.encode())
+    return h.hexdigest()
+
+def compare_participant_hash(user_list: list, received_hash:str) -> bool:
+    return gen_participant_hash(user_list) == received_hash
 
 @dataclass
 class Packet():

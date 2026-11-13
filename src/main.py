@@ -27,11 +27,11 @@ if __name__ == "__main__":
     peer_host = Peer_Host(name)
     valid = True
 
-    while valid:
-        print("Enter room code.")
-        session_id = input()
+    #while valid:
+    print("Enter room code.")
+    session_id = input()
 
-        roster = Lobby(name, peer_host).start(session_id)
+    roster = Lobby(name, peer_host).start(session_id)
 
         #if roster:
             #Game(roster, peer_host, session_id).run()
